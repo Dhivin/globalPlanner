@@ -1,0 +1,9 @@
+global_planner: 
+  obstacleThreshold: 90
+  costInscribedThreshold: 90
+  costPossiblyCircumscribedThreshold: 1
+  nominalVelocity: 0.9
+  timeToTurn45DegreeInplace: 0.5
+  robotLength: 0.3
+  robotWidth: 0.3
+

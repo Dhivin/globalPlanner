@@ -1,0 +1,6 @@
+<launch>
+  <!-- Controller -->
+  <rosparam command="load" file="$(find planner)/config/planner.yaml"/>
+  <node pkg="planner" type="global_planner" respawn="false" name="global_planner" output="screen">
+  </node>
+</launch>
