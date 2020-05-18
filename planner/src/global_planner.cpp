@@ -23,6 +23,7 @@ GlobalPlanner::GlobalPlanner(ros::NodeHandle *nodeHandle, std::string path) : nh
     * @brief ROS Subscribers
     */
 	clickedPointSubsriber = nh.subscribe("/clicked_point", 1, &GlobalPlanner::clickedPointCallback, this);
+	goalSubscriber		 = nh.subscribe("/move_base/goal", 1, &GlobalPlanner::goalCallback, this);
 	odomSubscriber = nh.subscribe("/amcl_pose", 1, &GlobalPlanner::odomCallback, this);
 	globalCostmapSubscriber = nh.subscribe("/move_base/global_costmap/costmap", 1, &GlobalPlanner::costmapCallback, this);
 	robotPoseSubscriber = nh.subscribe("/robot_pose", 1, &GlobalPlanner::robot_cb, this);
@@ -81,6 +82,45 @@ void GlobalPlanner::odomCallback(const geometry_msgs::PoseWithCovarianceStampedC
 	// m.getRPY(current_roll, current_pitch, current_yaw);
 	// current_theta = current_yaw ;
 }
+
+void GlobalPlanner::goalCallback(const move_base_msgs::MoveBaseActionGoal &goal_msg)
+{
+    // ROS_WARN("RosClass:: Received New goal");
+    // m_goalPose.position      = goal_msg.goal.target_pose.pose.position;
+    // m_goalPose.orientation   = goal_msg.goal.target_pose.pose.orientation;
+
+
+	std::vector<double> start, end;
+
+	m_goalX     = goal_msg.goal.target_pose.pose.position.x - m_offsetX;
+	m_goalY     = goal_msg.goal.target_pose.pose.position.y - m_offsetY;
+
+
+	tf::Quaternion q(0.0, 0.0, goal_msg.goal.target_pose.pose.orientation.z, goal_msg.goal.target_pose.pose.orientation.w);
+	tf::Matrix3x3 m(q);
+	double roll, pitch, yaw;
+	m.getRPY(roll, pitch, yaw);
+
+	m_goalTheta = yaw;
+
+	std::cout << "target position " << m_goalX << " " << m_goalY << " " << m_goalTheta << '\n';
+	std::cout << "current position " << m_robotX << " " << m_robotY << " " << m_robotTheta << '\n';
+
+	start.push_back(m_robotX);
+	start.push_back(m_robotY);
+	start.push_back(m_robotTheta);
+
+	end.push_back(m_goalX);
+	end.push_back(m_goalY);
+	end.push_back(m_goalTheta);
+	plan(start, end);
+
+	start.clear();
+	end.clear();
+
+}
+
+
 void GlobalPlanner::clickedPointCallback(const geometry_msgs::PointStampedConstPtr &msg)
 {
 	std::vector<double> start, end;

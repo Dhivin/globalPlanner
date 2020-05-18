@@ -2,18 +2,20 @@
 #define PLANNER_H
 
 #include <iostream>
-#include <geometry_msgs/PointStamped.h>
-#include <nav_msgs/Odometry.h>
+
 #include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/Pose.h>
-#include <ros/package.h>
 #include <nav_msgs/Path.h>
+#include <nav_msgs/Odometry.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <move_base_msgs/MoveBaseActionGoal.h>
 #include <vector>
+#include <ros/package.h>
 #include <stdio.h>
 
 #include "sbpl_includes.h"
@@ -49,6 +51,7 @@ private:
 	ros::Subscriber odomSubscriber;
 	ros::Subscriber globalCostmapSubscriber;
 	ros::Subscriber robotPoseSubscriber;
+	ros::Subscriber goalSubscriber;
 	
 	/**
      * @brief ROS Publishers
@@ -65,6 +68,7 @@ private:
 	void odomCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
 	void costmapCallback(const nav_msgs::OccupancyGridConstPtr data);
 	void robot_cb(const geometry_msgs::PoseConstPtr &robot_msg);
+	void goalCallback(const move_base_msgs::MoveBaseActionGoal &goal_msg);
 
 	bool plan(std::vector<double> from, std::vector<double> to);
 	void initializeEnviromentVariables();

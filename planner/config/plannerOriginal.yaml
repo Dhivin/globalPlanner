@@ -4,6 +4,6 @@ global_planner:
   costPossiblyCircumscribedThreshold: 1
   nominalVelocity: 0.9
   timeToTurn45DegreeInplace: 0.5
-  robotLength: 0.2
-  robotWidth: 0.2
+  robotLength: 0.3
+  robotWidth: 0.3
 
