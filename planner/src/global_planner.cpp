@@ -22,9 +22,7 @@ GlobalPlanner::GlobalPlanner(ros::NodeHandle *nodeHandle, std::string path) : nh
 	/**
     * @brief ROS Subscribers
     */
-	clickedPointSubsriber = nh.subscribe("/clicked_point", 1, &GlobalPlanner::clickedPointCallback, this);
 	goalSubscriber		 = nh.subscribe("/move_base/goal", 1, &GlobalPlanner::goalCallback, this);
-	odomSubscriber = nh.subscribe("/amcl_pose", 1, &GlobalPlanner::odomCallback, this);
 	globalCostmapSubscriber = nh.subscribe("/move_base/global_costmap/costmap", 1, &GlobalPlanner::costmapCallback, this);
 	robotPoseSubscriber = nh.subscribe("/robot_pose", 1, &GlobalPlanner::robot_cb, this);
 
@@ -69,19 +67,7 @@ void GlobalPlanner::robot_cb(const geometry_msgs::PoseConstPtr &msg)
 	m_robotTheta = yaw;
 }
 
-void GlobalPlanner::odomCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
-{
-	// current_x = msg->pose.pose.position.x - m_offsetX;
-	// current_y = msg->pose.pose.position.y - m_offsetY;
-	// current_z = msg->pose.pose.orientation.z;
-	// current_w = msg->pose.pose.orientation.w;
 
-	// tf::Quaternion q(msg->pose.pose.orientation.x, msg->pose.pose.orientation.y,msg->pose.pose.orientation.z, msg->pose.pose.orientation.w);
-	// tf::Matrix3x3 m(q);
-	// double current_roll,current_pitch,current_yaw;
-	// m.getRPY(current_roll, current_pitch, current_yaw);
-	// current_theta = current_yaw ;
-}
 
 void GlobalPlanner::goalCallback(const move_base_msgs::MoveBaseActionGoal &goal_msg)
 {
@@ -121,29 +107,6 @@ void GlobalPlanner::goalCallback(const move_base_msgs::MoveBaseActionGoal &goal_
 }
 
 
-void GlobalPlanner::clickedPointCallback(const geometry_msgs::PointStampedConstPtr &msg)
-{
-	std::vector<double> start, end;
-
-	m_goalX = msg->point.x - m_offsetX;
-	m_goalY = msg->point.y - m_offsetY;
-	m_goalTheta = msg->point.z;
-
-	std::cout << "target position " << m_goalX << " " << m_goalY << " " << m_goalTheta << '\n';
-	std::cout << "current position " << m_robotX << " " << m_robotY << " " << m_robotTheta << '\n';
-
-	start.push_back(m_robotX);
-	start.push_back(m_robotY);
-	start.push_back(m_robotTheta);
-
-	end.push_back(m_goalX);
-	end.push_back(m_goalY);
-	end.push_back(m_goalTheta);
-	plan(start, end);
-
-	start.clear();
-	end.clear();
-}
 bool GlobalPlanner::plan(std::vector<double> from, std::vector<double> to)
 {
 	std::string searchDir = "forward";
