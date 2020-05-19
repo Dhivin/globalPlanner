@@ -15,7 +15,8 @@
 // #include <stdio.h>
 #include "global_planner.h"
 
-#define CELL_GRID_SIZE 0.15
+
+
 
 GlobalPlanner::GlobalPlanner(ros::NodeHandle *nodeHandle, std::string path) : nh(*nodeHandle), path(path)
 {
@@ -32,6 +33,10 @@ GlobalPlanner::GlobalPlanner(ros::NodeHandle *nodeHandle, std::string path) : nh
 	globalPlanPublisher = nh.advertise<nav_msgs::Path>("/global_planner", 10);
 
 
+    /*  Reconfigure callback  */
+    f = boost::bind(&GlobalPlanner::reconfigureCallback, this, _1, _2);
+    server.setCallback(f);
+
 	initializeEnviromentVariables();
 
 	full_path.header.frame_id = "map";
@@ -40,9 +45,42 @@ GlobalPlanner::GlobalPlanner(ros::NodeHandle *nodeHandle, std::string path) : nh
 GlobalPlanner::~GlobalPlanner()
 {
 }
+
+
+
+/* Reconfigure callback   */
+void GlobalPlanner::reconfigureCallback(planner::plannerConfig &config, uint32_t level)
+{
+    ROS_INFO_ONCE("In reconfiguration call back");
+
+	m_allocatedTimeSecs		= config.allocatedTimeSecs;
+	m_initialEpsilon		= config.initialEpsilon;
+
+
+
+    // /*The first time we're called, we just want to make sure we have the original configuration
+    //  * if restore defaults is set on the parameter server, prevent looping    */
+    if (config.restore_defaults)
+    {
+        ROS_WARN_ONCE("TrajectoryController:: Re-setting default values");
+        config 					= defaultConfig;
+        config.restore_defaults = false;
+    }
+
+    if (!m_setup)
+    {
+        lastConfig 		= config;
+        defaultConfig   = config;
+        m_setup = true;
+        return;
+    }
+    lastConfig = config;
+}
+
+
 void GlobalPlanner::costmapCallback(const nav_msgs::OccupancyGridConstPtr data)
 {
-	ROS_WARN("Costmap Callback");
+	//ROS_WARN("Costmap Callback");
 	m_gridWidth = data->info.width;
 	m_gridHeight = data->info.height;
 	m_resolution = data->info.resolution;
@@ -71,11 +109,6 @@ void GlobalPlanner::robot_cb(const geometry_msgs::PoseConstPtr &msg)
 
 void GlobalPlanner::goalCallback(const move_base_msgs::MoveBaseActionGoal &goal_msg)
 {
-    // ROS_WARN("RosClass:: Received New goal");
-    // m_goalPose.position      = goal_msg.goal.target_pose.pose.position;
-    // m_goalPose.orientation   = goal_msg.goal.target_pose.pose.orientation;
-
-
 	std::vector<double> start, end;
 
 	m_goalX     = goal_msg.goal.target_pose.pose.position.x - m_offsetX;
@@ -89,8 +122,8 @@ void GlobalPlanner::goalCallback(const move_base_msgs::MoveBaseActionGoal &goal_
 
 	m_goalTheta = yaw;
 
-	std::cout << "target position " << m_goalX << " " << m_goalY << " " << m_goalTheta << '\n';
-	std::cout << "current position " << m_robotX << " " << m_robotY << " " << m_robotTheta << '\n';
+	//std::cout << "target position " << m_goalX << " " << m_goalY << " " << m_goalTheta << '\n';
+	//std::cout << "current position " << m_robotX << " " << m_robotY << " " << m_robotTheta << '\n';
 
 	start.push_back(m_robotX);
 	start.push_back(m_robotY);
@@ -118,7 +151,7 @@ bool GlobalPlanner::plan(std::vector<double> from, std::vector<double> to)
 
 
 
-	std::vector<std::vector<int>> full_solution;
+	std::vector<std::vector<double>> full_solution;
 
 	full_solution = sbpl_planner.planxythetamlevlat(planner,from,to,mot_prim_file_name.c_str(),this->m_mapData,sbpl_planner.map_info);
 
@@ -128,27 +161,28 @@ bool GlobalPlanner::plan(std::vector<double> from, std::vector<double> to)
 	if (full_solution.size() > 0)
 	{
 
-		ROS_INFO("Planning done");
-		std::vector<std::vector<double>> current_full_path;
+		ROS_INFO("Planning done : %d",full_solution.size());
+		//std::vector<std::vector<double>> current_full_path;
+		// for (auto path : full_solution)
+		// {
+		// 	std::vector<double> v;
+		// 	v.push_back(path[0]);
+		// 	v.push_back(path[1]);
+		// 	v.push_back(path[2]);
+		// 	current_full_path.push_back(v);
+		// }
+		full_path.poses.clear();
 		for (auto path : full_solution)
 		{
-			std::vector<double> v;
-			v.push_back(DISCXY2CONT(path[0], m_resolution));
-			v.push_back(DISCXY2CONT(path[1], m_resolution));
-			v.push_back(DiscTheta2Cont(path[2], 4));
-			current_full_path.push_back(v);
-		}
-		full_path.poses.clear();
-		for (auto path : current_full_path)
-		{
-			geometry_msgs::PoseStamped pose;
-			pose.header.frame_id = "map";
-			pose.pose.position.x = path[0] + m_offsetX;
-			pose.pose.position.y = path[1] + m_offsetY;
+			geometry_msgs::PoseStamped pathPose;
+			pathPose.header.frame_id = "map";
+
+			pathPose.pose.position.x = path[0] + m_offsetX;
+			pathPose.pose.position.y = path[1] + m_offsetY;
 			tf2::Quaternion quater;
 			quater.setRPY(0, 0, path[2]);
-			tf2::convert(quater, pose.pose.orientation);
-			full_path.poses.push_back(pose);
+			tf2::convert(quater, pathPose.pose.orientation);
+			full_path.poses.push_back(pathPose);
 		}
 		globalPlanPublisher.publish(full_path);
 		return true;
@@ -172,7 +206,9 @@ void GlobalPlanner::setEnvironmentVariables()
 	sbpl_planner.map_info.timetoturn45degsinplace = m_timeToTurn45DegreeInplace;
 	sbpl_planner.map_info.robotWidth = m_robotWidth;
 	sbpl_planner.map_info.robotLength = m_robotLength;
-    std::cout << "setEnvironmentVariables()" << m_nominalVelocity << m_timeToTurn45DegreeInplace << m_obstacleThreshold << std::endl;  
+	sbpl_planner.map_info.allocatedTimeSecs = m_allocatedTimeSecs;
+	sbpl_planner.map_info.initialEpsilon = m_initialEpsilon;
+    //std::cout << "setEnvironmentVariables()" << m_nominalVelocity << m_timeToTurn45DegreeInplace << m_obstacleThreshold << std::endl;  
 
 }
 
@@ -197,12 +233,13 @@ int main(int argc, char *argv[])
 	ros::init(argc, argv, "global_planner");
 	ros::NodeHandle nh_;
 	std::string path = ros::package::getPath("planner");
+	ros::Rate rate(5);
 
 	GlobalPlanner global_planner(&nh_, path);
 	while (ros::ok())
 	{
 		//	test.print() ;
 		ros::spinOnce();
-		usleep(25000);
+		rate.sleep();
 	}
 }

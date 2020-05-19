@@ -16,6 +16,9 @@
 #include <ros/package.h>
 #include <stdio.h>
 
+#include <planner/plannerConfig.h> 
+#include <dynamic_reconfigure/server.h>
+
 #include "sbpl_includes.h"
 
 class GlobalPlanner
@@ -64,9 +67,15 @@ private:
 	void robot_cb(const geometry_msgs::PoseConstPtr &robot_msg);
 	void goalCallback(const move_base_msgs::MoveBaseActionGoal &goal_msg);
 
+    dynamic_reconfigure::Server<planner::plannerConfig> server;
+    dynamic_reconfigure::Server<planner::plannerConfig>::CallbackType f;
+	void reconfigureCallback(planner::plannerConfig &config, uint32_t level);
+
 	bool plan(std::vector<double> from, std::vector<double> to);
 	void initializeEnviromentVariables();
 	void setEnvironmentVariables();
+
+	double m_allocatedTimeSecs,m_initialEpsilon;
 
 	double m_robotX, m_robotY, m_robotTheta;
 	double m_goalX, m_goalY, m_goalTheta;
@@ -82,6 +91,13 @@ private:
 	std::vector<int> m_mapData;
 	std::string path;
 
+	bool m_setup = false;
+
+
+    /* Reconfigure parameters */
+
+    planner::plannerConfig lastConfig;
+    planner::plannerConfig defaultConfig;
 	
 };
 

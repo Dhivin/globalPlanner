@@ -32,6 +32,7 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <chrono>
 
 using namespace std;
 
@@ -80,6 +81,8 @@ public:
         double timetoturn45degsinplace;
         double robotLength;
         double robotWidth;
+        double allocatedTimeSecs;
+        double initialEpsilon;
     };
 
     MapInfo map_info;
@@ -88,7 +91,7 @@ public:
     PlannerType StrToPlannerType(const char *str);
     std::string EnvironmentTypeToStr(EnvironmentType environmentType);
     EnvironmentType StrToEnvironmentType(const char *str);
-    std::vector<std::vector<int>> planxythetamlevlat(PlannerType plannerType,std::vector<double> start, std::vector<double> end,const char *smotPrimFile, std::vector<int> &map_data,MapInfo map_info);
+    std::vector<std::vector<double>> planxythetamlevlat(PlannerType plannerType,std::vector<double> start, std::vector<double> end,const char *smotPrimFile, std::vector<int> &map_data,MapInfo map_info);
 
 
 };

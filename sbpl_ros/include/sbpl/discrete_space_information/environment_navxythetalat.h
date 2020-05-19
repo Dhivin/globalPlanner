@@ -214,6 +214,7 @@ public:
 
 
     virtual bool InitializeMapdata(const std::vector<int> &map_data);
+
     /**
      * \brief initialization of environment from file. See .cfg files for
      *        examples it also takes the perimeter of the robot with respect to some
@@ -383,6 +384,17 @@ public:
                                const std::vector<sbpl_2Dpt_t>& perimeterptsV, double cellsize_m,
                                double nominalvel_mpersecs, double timetoturn45degsinplace_secs,
                                int obsthresh, const char* sMotPrimFile);
+
+
+    virtual bool InitializeEnv(int width, int height,
+                               /** if mapdata is NULL the grid is initialized to all freespace */
+                               const unsigned char* mapdata,
+                               double startx, double starty, double starttheta,
+                               double goalx, double goaly, double goaltheta,
+                               const std::vector<sbpl_2Dpt_t>& perimeterptsV, double cellsize_m,
+                               double nominalvel_mpersecs, double timetoturn45degsinplace_secs,
+                               int obsthresh, const char* sMotPrimFile);
+
     bool setInitialiazeMapdata(const std::vector<int> &map_data);
 
     /**

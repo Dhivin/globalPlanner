@@ -10,9 +10,11 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sbpl_ros
   roslib
+  dynamic_reconfigure
+  actionlib_msgs
 )
 
-
+generate_dynamic_reconfigure_options(cfg/planner.cfg)
 #find_package(PkgConfig REQUIRED)
 #pkg_check_modules(SBPL REQUIRED sbpl)
 
@@ -42,3 +44,4 @@ add_executable(global_planner src/global_planner.cpp
 #target_link_libraries(test2 ${catkin_LIBRARIES} sbpl)
 target_link_libraries(global_planner ${catkin_LIBRARIES} sbpl)
 
+add_dependencies(global_planner ${PROJECT_NAME}_gencfg)

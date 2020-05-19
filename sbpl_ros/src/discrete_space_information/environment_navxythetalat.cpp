@@ -142,7 +142,7 @@ void EnvironmentNAVXYTHETALATTICE::SetConfiguration(
     const std::vector<sbpl_2Dpt_t> &robot_perimeterV)
 {
 
-    std::cout << "Called SetConfiguration()" << std::endl;
+    //std::cout << "Called SetConfiguration()" << std::endl;
 
     EnvNAVXYTHETALATCfg.EnvWidth_c = width;
     EnvNAVXYTHETALATCfg.EnvHeight_c = height;
@@ -2316,8 +2316,7 @@ bool EnvironmentNAVXYTHETALATTICE::InitializeEnv(
 
     return InitializeEnv(width, height, params.mapdata, params.startx,
                          params.starty, params.starttheta, params.goalx,
-                         params.goaly, params.goaltheta, params.goaltol_x,
-                         params.goaltol_y, params.goaltol_theta, perimeterptsV,
+                         params.goaly, params.goaltheta,perimeterptsV,
                          cellsize_m, nominalvel_mpersecs,
                          timetoturn45degsinplace_secs, obsthresh, sMotPrimFile);
 }
@@ -2330,8 +2329,9 @@ bool EnvironmentNAVXYTHETALATTICE::InitializeEnv(
     double nominalvel_mpersecs, double timetoturn45degsinplace_secs,
     int obsthresh, const char *sMotPrimFile)
 {
-    std::cout << "obstreahs:" << obsthresh << '\n';
-    std::cout << "overide function " << std::endl;
+    //std::cout << "Default function" << obsthresh << '\n';
+    // std::cout << "obstreahs:" << obsthresh << '\n';
+    // std::cout << "overide function " << std::endl;
     SBPL_PRINTF("env: initialize with width=%d height=%d start=%.3f %.3f %.3f "
                 "goalx=%.3f %.3f %.3f cellsize=%.3f nomvel=%.3f timetoturn=%.3f, "
                 "obsthresh=%d\n",
@@ -2353,7 +2353,7 @@ bool EnvironmentNAVXYTHETALATTICE::InitializeEnv(
     EnvNAVXYTHETALATCfg.cellsize_m = cellsize_m;
     EnvNAVXYTHETALATCfg.StartTheta_rad = starttheta;
     EnvNAVXYTHETALATCfg.EndTheta_rad = goaltheta;
-    std::cout << (int)EnvNAVXYTHETALATCfg.obsthresh << std::endl;
+    //std::cout << (int)EnvNAVXYTHETALATCfg.obsthresh << std::endl;
 
     // TODO - need to set the tolerance as well
 
@@ -2408,10 +2408,101 @@ bool EnvironmentNAVXYTHETALATTICE::InitializeEnv(
     return true;
 }
 
+/*ra-1:Extra added Overloaded function without goalx-y-theta tolerances*/
+
+bool EnvironmentNAVXYTHETALATTICE::InitializeEnv(
+    int width, int height, const unsigned char *mapdata, double startx,
+    double starty, double starttheta, double goalx, double goaly,
+    double goaltheta,const std::vector<sbpl_2Dpt_t> &perimeterptsV, double cellsize_m,
+    double nominalvel_mpersecs, double timetoturn45degsinplace_secs,
+    int obsthresh, const char *sMotPrimFile)
+{
+    //std::cout << "Function Overloading " << obsthresh << '\n';
+    // std::cout << "obstreahs:" << obsthresh << '\n';
+    // std::cout << "overide function " << std::endl;
+    SBPL_PRINTF("env: initialize with width=%d height=%d start=%.3f %.3f %.3f "
+                "goalx=%.3f %.3f %.3f cellsize=%.3f nomvel=%.3f timetoturn=%.3f, "
+                "obsthresh=%d\n",
+                width, height, startx, starty, starttheta, goalx, goaly,
+                goaltheta, cellsize_m, nominalvel_mpersecs,
+                timetoturn45degsinplace_secs, obsthresh);
+
+    SBPL_PRINTF("NOTE: goaltol parameters currently unused\n");
+
+    SBPL_PRINTF("perimeter has size=%d\n", (unsigned int)perimeterptsV.size());
+
+    for (int i = 0; i < (int)perimeterptsV.size(); i++)
+    {
+        SBPL_PRINTF("perimeter(%d) = %.4f %.4f\n", i, perimeterptsV.at(i).x,
+                    perimeterptsV.at(i).y);
+    }
+
+    EnvNAVXYTHETALATCfg.obsthresh = (unsigned char)obsthresh;
+    EnvNAVXYTHETALATCfg.cellsize_m = cellsize_m;
+    EnvNAVXYTHETALATCfg.StartTheta_rad = starttheta;
+    EnvNAVXYTHETALATCfg.EndTheta_rad = goaltheta;
+    //std::cout << (int)EnvNAVXYTHETALATCfg.obsthresh << std::endl;
+
+    // TODO - need to set the tolerance as well
+
+    if (sMotPrimFile != NULL)
+    {
+        FILE *fMotPrim = fopen(sMotPrimFile, "r");
+        if (fMotPrim == NULL)
+        {
+            std::stringstream ss;
+            ss << "ERROR: unable to open " << sMotPrimFile;
+            throw SBPL_Exception(ss.str());
+        }
+
+        if (ReadMotionPrimitives(fMotPrim) == false)
+        {
+            throw SBPL_Exception("ERROR: failed to read in motion primitive file");
+        }
+        fclose(fMotPrim);
+    }
+
+    EnvNAVXYTHETALATCfg.StartTheta =
+        ContTheta2DiscNew(EnvNAVXYTHETALATCfg.StartTheta_rad);
+    if (EnvNAVXYTHETALATCfg.StartTheta < 0 ||
+        EnvNAVXYTHETALATCfg.StartTheta >= EnvNAVXYTHETALATCfg.NumThetaDirs)
+    {
+        throw new SBPL_Exception("ERROR: illegal start coordinates for theta");
+    }
+    EnvNAVXYTHETALATCfg.EndTheta =
+        ContTheta2DiscNew(EnvNAVXYTHETALATCfg.EndTheta_rad);
+    if (EnvNAVXYTHETALATCfg.EndTheta < 0 ||
+        EnvNAVXYTHETALATCfg.EndTheta >= EnvNAVXYTHETALATCfg.NumThetaDirs)
+    {
+        throw new SBPL_Exception("ERROR: illegal goal coordiantes for theta");
+    }
+
+    SetConfiguration(
+        width, height, mapdata, CONTXY2DISC(startx, cellsize_m),
+        CONTXY2DISC(starty, cellsize_m), EnvNAVXYTHETALATCfg.StartTheta,
+        CONTXY2DISC(goalx, cellsize_m), CONTXY2DISC(goaly, cellsize_m),
+        EnvNAVXYTHETALATCfg.EndTheta, cellsize_m, nominalvel_mpersecs,
+        timetoturn45degsinplace_secs, perimeterptsV);
+
+    if (EnvNAVXYTHETALATCfg.mprimV.size() != 0)
+    {
+        InitGeneral(&EnvNAVXYTHETALATCfg.mprimV);
+    }
+    else
+    {
+        InitGeneral(NULL);
+    }
+
+    return true;
+}
+
+
+/*This function will be populating the 2D matrix for computations*/
+
 bool EnvironmentNAVXYTHETALATTICE::InitializeMapdata(
     const std::vector<int> &map_data)
 {
-    std::cout << "Setting Config with  globalcostmap data " << '\n';
+    //std::cout << "Setting Config with  globalcostmap data " << '\n';
     int width = EnvNAVXYTHETALATCfg.EnvWidth_c;
     int height = EnvNAVXYTHETALATCfg.EnvHeight_c;
     for (int y = 0; y < height; y++)

@@ -59,6 +59,8 @@ typedef struct
 class EnvironmentNAVXYTHETAMLEVLAT : public EnvironmentNAVXYTHETALAT
 {
 public:
+
+
     /**
      * \brief initialization of additional levels. 0 is the original one. All additional ones will start with index 1
      *        For each level, it also takes cost thresholds for cells lying

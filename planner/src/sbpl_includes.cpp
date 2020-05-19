@@ -107,15 +107,16 @@ EnvironmentType SBPLIncludes::StrToEnvironmentType(const char *str)
     }
 }
 
-std::vector<std::vector<int>> SBPLIncludes::planxythetamlevlat(PlannerType plannerType,std::vector<double> start, std::vector<double> end,const char *smotPrimFile, std::vector<int> &map_data,MapInfo map_info)
+std::vector<std::vector<double>> SBPLIncludes::planxythetamlevlat(PlannerType plannerType,std::vector<double> start, std::vector<double> end,const char *smotPrimFile, std::vector<int> &map_data,MapInfo map_info)
 {
     int bRet = 0;
-    double allocated_time_secs = 10.0; //in seconds
-    double initialEpsilon = 3.0;
+    double allocated_time_secs = map_info.allocatedTimeSecs;//10.0; //in seconds
+    double initialEpsilon = map_info.initialEpsilon;//3.0;
     MDPConfig MDPCfg;
     bool bsearchuntilfirstsolution = false;
     bool bforwardsearch = true;
 
+    std::cout << "Initial assumptions : "<< allocated_time_secs << " "<<initialEpsilon <<std::endl;
     //set the perimeter of the robot (it is given with 0,0,0 robot ref. point for which planning is done)
     //this is for the default level - base level
     vector<sbpl_2Dpt_t> perimeterptsV;
@@ -143,11 +144,11 @@ std::vector<std::vector<int>> SBPLIncludes::planxythetamlevlat(PlannerType plann
 
     // std::cout << "ENV SETUP DONE sbplincludes.cpp" << map_info.nominalvel << "  "<< map_info.timetoturn45degsinplace << "  " << map_info.obsthresh << std::endl;  
     
-    if (!environment_navxythetalat.InitializeEnv(map_info.width, map_info.height, mapdata,start[0], start[1], start[2], end[0], end[1], end[2], 1, 1, 1, perimeterptsV, map_info.cell_size, map_info.nominalvel,map_info.timetoturn45degsinplace,map_info.obsthresh, smotPrimFile))
+    if (!environment_navxythetalat.InitializeEnv(map_info.width, map_info.height, mapdata,start[0], start[1], start[2], end[0], end[1], end[2], perimeterptsV, map_info.cell_size, map_info.nominalvel,map_info.timetoturn45degsinplace,map_info.obsthresh, smotPrimFile))
     {
         throw SBPL_Exception("ERROR: InitializeEnv failed");
     }
-    std::cout << "ENV SETUP DONE" << std::endl;
+    
     //setting grid with global cost values
     environment_navxythetalat.InitializeMapdata(map_data);
 
@@ -177,7 +178,7 @@ std::vector<std::vector<int>> SBPLIncludes::planxythetamlevlat(PlannerType plann
 
     //enable the second level
     int numofaddlevels = 1;
-    printf("Number of additional levels = %d\n", numofaddlevels);
+    //printf("Number of additional levels = %d\n", numofaddlevels);
     unsigned char cost_inscribed_thresh_addlevels[2];              //size should be at least numofaddlevels
     unsigned char cost_possibly_circumscribed_thresh_addlevels[2]; //size should be at least numofaddlevels
     //no costs are indicative of whether a cell is within inner circle
@@ -263,30 +264,38 @@ std::vector<std::vector<int>> SBPLIncludes::planxythetamlevlat(PlannerType plann
     //set search mode
     planner->set_search_mode(bsearchuntilfirstsolution);
 
-    std::cout << "Start Planning " << std::endl;
+    //std::cout << "Start Planning " << std::endl;
+    auto t1 = std::chrono::high_resolution_clock::now();
+
     bRet = planner->replan(allocated_time_secs, &solution_stateIDs_V);
 
-    std::cout << "Done Planning...Size of solution = " << solution_stateIDs_V.size() << std::endl;
+    auto t2 = std::chrono::high_resolution_clock::now(); // stop time measurement
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    std::cout << "Execution time: " << duration << " milliseconds" << std::endl;   
 
     environment_navxythetalat.PrintTimeStat(stdout);
     vector<sbpl_xy_theta_pt_t> xythetaPath;
     environment_navxythetalat.ConvertStateIDPathintoXYThetaPath(&solution_stateIDs_V, &xythetaPath);
 
-    std::cout << "Full Solution size including intermediate points  = " << (unsigned int)xythetaPath.size() << std::endl;
+    std::cout << "Done Planning.Size of solution = " << solution_stateIDs_V.size()<<" and including intermediate points: "<<(unsigned int)xythetaPath.size() << std::endl;
 
-    std::vector<std::vector<int>> path;
-    std::vector<int> coordinates;
+//    std::cout << "Full Solution size including intermediate points  = " << (unsigned int)xythetaPath.size() << std::endl;
+
+    
+    std::vector<std::vector<double>> path;
+    std::vector<double> coordinates;
     int x, y, theta;
 
-    for (size_t i = 0; i < solution_stateIDs_V.size(); i++)
+    for (size_t i = 0; i < xythetaPath.size(); i++) //solution_stateIDs_V.size()
     {
         coordinates.clear();
-        environment_navxythetalat.GetCoordFromState(solution_stateIDs_V[i], x, y, theta);
-        printf("%d %d %d\t\t%.3f %.3f %.3f\n", x, y, theta, DISCXY2CONT(x, map_info.cell_size), DISCXY2CONT(y, map_info.cell_size), DiscTheta2Cont(theta, 4));
+        //environment_navxythetalat.GetCoordFromState(solution_stateIDs_V[i], x, y, theta);
+        //printf("%d %d %d\t\t%.3f %.3f %.3f\n", x, y, theta, DISCXY2CONT(x, map_info.cell_size), DISCXY2CONT(y, map_info.cell_size), DiscTheta2Cont(theta, 4));
 
-        coordinates.push_back(x);
-        coordinates.push_back(y);
-        coordinates.push_back(theta);
+
+        coordinates.push_back(xythetaPath[i].x);
+        coordinates.push_back(xythetaPath[i].y);
+        coordinates.push_back(xythetaPath[i].theta);
 
         path.push_back(coordinates);
     }

@@ -212,6 +212,7 @@ class EnvironmentNAVXYTHETALATTICE : public DiscreteSpaceInformation
 public:
     EnvironmentNAVXYTHETALATTICE();
 
+    virtual bool InitializeMapdata(const std::vector<int> &map_data);
     /**
      * \brief initialization of environment from file. See .cfg files for
      *        examples it also takes the perimeter of the robot with respect to some
@@ -594,7 +595,6 @@ public:
 
     ~EnvironmentNAVXYTHETALAT();
 
-   
     /**
      * \brief sets start in meters/radians
      */

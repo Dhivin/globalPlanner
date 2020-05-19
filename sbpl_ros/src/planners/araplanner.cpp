@@ -996,7 +996,7 @@ bool ARAPlanner::Search(ARASearchStateSpace_t* pSearchStateSpace, vector<int>& p
             tempStat.cost = ((ARAState*)pSearchStateSpace->searchgoalstate->PlannerSpecificData)->g;
             stats.push_back(tempStat);
         }
-
+        std::cout << "Current Eplsilon  "<< pSearchStateSpace->eps << std::endl;
 #if DEBUG
         SBPL_FPRINTF(fDeb, "eps=%f expands=%d g(searchgoal)=%d time=%.3f\n", pSearchStateSpace->eps_satisfied,
                      searchexpands - prevexpands,
@@ -1092,6 +1092,7 @@ int ARAPlanner::replan(double allocated_time_secs, vector<int>* solution_stateID
         SBPL_PRINTF("failed to find a solution\n");
     }
 
+   // std::cout << "Inside ARA::replan  "<< allocated_time_secs << std::endl;
     //copy the solution
     *solution_stateIDs_V = pathIds;
     *psolcost = PathCost;
