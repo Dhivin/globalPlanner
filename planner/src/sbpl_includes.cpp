@@ -116,7 +116,7 @@ std::vector<std::vector<double>> SBPLIncludes::planxythetamlevlat(PlannerType pl
     bool bsearchuntilfirstsolution = false;
     bool bforwardsearch = true;
 
-    std::cout << "Initial assumptions : "<< allocated_time_secs << " "<<initialEpsilon <<std::endl;
+    std::cout << "Initial assumptions  alloted time:"<< allocated_time_secs << " seconds  Epsilon:"<<initialEpsilon <<std::endl;
     //set the perimeter of the robot (it is given with 0,0,0 robot ref. point for which planning is done)
     //this is for the default level - base level
     vector<sbpl_2Dpt_t> perimeterptsV;
@@ -305,7 +305,8 @@ std::vector<std::vector<double>> SBPLIncludes::planxythetamlevlat(PlannerType pl
     //print a path
     if (bRet)
     {
-        std::cout << "Solution is found" << std::endl;
+        std::cout << "Solution is found " << std::endl;
+        std::cout << "\n" << std::endl;
     }
     else
     {

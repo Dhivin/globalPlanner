@@ -996,7 +996,7 @@ bool ARAPlanner::Search(ARASearchStateSpace_t* pSearchStateSpace, vector<int>& p
             tempStat.cost = ((ARAState*)pSearchStateSpace->searchgoalstate->PlannerSpecificData)->g;
             stats.push_back(tempStat);
         }
-        std::cout << "Current Eplsilon  "<< pSearchStateSpace->eps << std::endl;
+        
 #if DEBUG
         SBPL_FPRINTF(fDeb, "eps=%f expands=%d g(searchgoal)=%d time=%.3f\n", pSearchStateSpace->eps_satisfied,
                      searchexpands - prevexpands,
@@ -1042,7 +1042,7 @@ bool ARAPlanner::Search(ARASearchStateSpace_t* pSearchStateSpace, vector<int>& p
     final_eps_planning_time = (clock() - TimeStarted) / ((double)CLOCKS_PER_SEC);
     final_eps = pSearchStateSpace->eps_satisfied;
     //SBPL_FPRINTF(fStat, "%d %d\n", searchexpands, solcost);
-
+    std::cout << "Final Epsilon : "<< pSearchStateSpace->eps << std::endl;
     return ret;
 }
 

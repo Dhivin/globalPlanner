@@ -38,7 +38,9 @@ include_directories(
 
 #add_executable(test2 src/planner_new.cpp)
 add_executable(global_planner src/global_planner.cpp
-			      src/sbpl_includes.cpp)
+			      src/sbpl_includes.cpp
+            src/ros_class.cpp
+            src/environment.cpp)
 
 
 #target_link_libraries(test2 ${catkin_LIBRARIES} sbpl)

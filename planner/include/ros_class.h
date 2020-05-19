@@ -8,10 +8,21 @@
 #include <vector>
 
 
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <tf/transform_listener.h>
+#include <tf/transform_datatypes.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <geometry_msgs/PointStamped.h>
-#include <nav_msgs/OccupancyGrid.h>
+#include <geometry_msgs/Pose.h>
 #include <nav_msgs/Path.h>
+#include <nav_msgs/OccupancyGrid.h>
+#include <move_base_msgs/MoveBaseActionGoal.h>
+#include <vector>
+#include <ros/package.h>
+#include <stdio.h>
+
+
+
 
 class RosClass
 {
@@ -27,40 +38,67 @@ public:
     */
     ~RosClass();
 
-    /* Accessors */
-   
-    double xytest = 10.0;
+    /**
+    * @brief Getter functions
+    */
+
+    int getGridWidth();
+    int getGridHeight();
+    int getOffsetX();
+    int getOffsetY();
+    double getResolution();
+    std::vector<int> getMapdata();
+    std::vector<double> getStart();
+    std::vector<double> getGoal();
+
+    geometry_msgs::Pose getRobotPose();    
+    geometry_msgs::Pose getGoalPose(); 
+
+    void publishPath(nav_msgs::Path m_Path);
     
 private:
-     /**
-    * @brief NodeHandle ROS
-    */
+	
     ros::NodeHandle nh;
 
-    void costmapCallback(const nav_msgs::OccupancyGridConstPtr data);
 
-    void odomCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
-
-	void clickedPointCallback(const geometry_msgs::PointStampedConstPtr &msg);
-
-    // /**
-    //  * @brief ROS Subscribers
-    //  */
-    ros::Subscriber clickedPoints;
-    ros::Subscriber odomSubscriber;
-    ros::Subscriber globalCostmapSubscriber;
+	/**
+    * @brief ROS Subscribers
+    */
+	ros::Subscriber globalCostmapSubscriber;
+	ros::Subscriber robotPoseSubscriber;
+	ros::Subscriber goalSubscriber;
 
 
- 	int grid_height;
-	int grid_width;
-	int offset_x;
-	int offset_y;
-  	double resolution ;   
+	
+	/**
+    * @brief ROS Publishers
+    */
+	ros::Publisher globalPlanPublisher;
+
+
+
+	/**
+    * @brief Subscriber Callbacks
+    */
+
+	void costmapCallback(const nav_msgs::OccupancyGridConstPtr data);
+	void robot_cb(const geometry_msgs::Pose& robot_msg);
+	void goalCallback(const move_base_msgs::MoveBaseActionGoal &goal_msg);
+
+
+
+
+
+    int m_gridWidth, m_gridHeight,m_offsetX, m_offsetY;
     
-    std::vector<int> data;
+    double m_resolution;
+    double m_robotX, m_robotY, m_robotTheta;
+    double m_goalX, m_goalY, m_goalTheta;
 
+    std::vector<int> m_mapData;
+    std::vector<double> start, end;
 
-
+    geometry_msgs::Pose m_goalPose,m_robotPose;
     
 };
 
