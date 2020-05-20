@@ -1,23 +1,29 @@
 #include <ros/console.h> 
 #include "environment.h"
 /**
-    * @brief  Constructor for the Computations
-    */
+* @brief  Constructor for the Environment
+*/
 Environment::Environment()
 {
-    /*  Reconfigure callback  */
     initializeEnviromentVariables();
+ 
+    /*  Reconfigure callback  */
     f = boost::bind(&Environment::reconfigureCallback, this, _1, _2);
     server.setCallback(f);
 }
 
+/**
+* @brief  Destructor for the Environment class
+*/
 Environment::~Environment()
 {
 }
 
 
 
-/* Reconfigure callback   */
+/**
+* @brief  Reconfiguration Call back
+*/
 void Environment::reconfigureCallback(planner::plannerConfig &config, uint32_t level)
 {
     ROS_INFO_ONCE("In reconfiguration call back");
@@ -48,41 +54,32 @@ void Environment::reconfigureCallback(planner::plannerConfig &config, uint32_t l
 
 
 
+/**
+* @brief  Member function used to call the planner
+* @param from Starting point for the planner
+* @param to Goal point for the planner 
+* @param mapInfo contains the environment variables from the costmap
+* @param mapData contains the map data from the costmap
+* @param path contains the directory where the motion primitive file is placed
+*/
 
-
-bool Environment::plan(std::vector<double> from, std::vector<double> to,MapInfo& mapInfo,std::vector<int>& mapData,std::string path)
+bool Environment::plan(std::vector<double>& from, std::vector<double>& to,CostMapInfo& costMapInfo, const std::vector<int>& mapData,std::string& path)
 {
 	std::string searchDir = "forward";
 	std::string plannerType = "arastar";
 	PlannerType planner = sbpl_planner.StrToPlannerType(plannerType.c_str());
-	std::string mot_prim_file_name = path + "/config/robot.mprim";
+	std::string mot_prim_file_name = path + "/config/robot1.mprim";
 	bool forwardSearch = !strcmp(searchDir.c_str(), "forward");
 
-    MapInfo map_info    = mapInfo;
+    CostMapInfo map_info    = costMapInfo;
 	setEnvironmentVariables(map_info);
 	std::vector<std::vector<double>> full_solution;
 
-    ROS_INFO("plan..!!");
-	full_solution = sbpl_planner.planxythetamlevlat(planner,from,to,mot_prim_file_name.c_str(),mapData,sbpl_planner.map_info);
-    ROS_INFO("size..!!  : %d",full_solution.size());
-
-	// //full_solution = sbpl_planner.planxythetamlevlat(planner, m_gridWidth, m_gridHeight, from, to, m_resolution, 80, mot_prim_file_name.c_str(), this->m_mapData);
+	full_solution = sbpl_planner.planxythetamlevlat(planner,from,to,mot_prim_file_name.c_str(),mapData,sbpl_planner.planner_info);
 
 	if (full_solution.size() > 0)
 	{
 
-		ROS_INFO("Planning done : %d",full_solution.size());
-		std::vector<std::vector<double>> current_full_path;
-        
-
-		for (auto path : full_solution)
-		{
-			std::vector<double> v;
-			v.push_back(path[0]);
-			v.push_back(path[1]);
-			v.push_back(path[2]);
-			current_full_path.push_back(v);
-		}
 		m_fullPath.poses.clear();
         m_fullPath.header.frame_id = "map";
 		for (auto path : full_solution)
@@ -108,26 +105,30 @@ bool Environment::plan(std::vector<double> from, std::vector<double> to,MapInfo&
 }
 
 
-
-void Environment::setEnvironmentVariables(MapInfo& map_info)
+/**
+* @brief  Sets the Environment variables for passing to the planner.Updated from parameter server and costmap data
+* @param mapInfo contains the environment variables from the costmap
+*/
+void Environment::setEnvironmentVariables(CostMapInfo& map_info)
 {
-	sbpl_planner.map_info.width                               = map_info.width;
-	sbpl_planner.map_info.height                              = map_info.height;
-	sbpl_planner.map_info.cell_size                           = map_info.resolution;
-	sbpl_planner.map_info.obsthresh                           = m_obstacleThreshold;
-	sbpl_planner.map_info.cost_inscribed_thresh               = m_costInscribedThreshold;
-	sbpl_planner.map_info.cost_possibly_circumscribed_thresh  = m_costPossiblyCircumscribedThreshold;
-	sbpl_planner.map_info.nominalvel                          = m_nominalVelocity;
-	sbpl_planner.map_info.timetoturn45degsinplace             = m_timeToTurn45DegreeInplace;
-	sbpl_planner.map_info.robotWidth                          = m_robotWidth;
-	sbpl_planner.map_info.robotLength                         = m_robotLength;
-	sbpl_planner.map_info.allocatedTimeSecs                   = m_allocatedTimeSecs;
-	sbpl_planner.map_info.initialEpsilon                      = m_initialEpsilon;
+	sbpl_planner.planner_info.width                               = map_info.width;
+	sbpl_planner.planner_info.height                              = map_info.height;
+	sbpl_planner.planner_info.cell_size                           = map_info.resolution;
+	sbpl_planner.planner_info.obsthresh                           = m_obstacleThreshold;
+	sbpl_planner.planner_info.cost_inscribed_thresh               = m_costInscribedThreshold;
+	sbpl_planner.planner_info.cost_possibly_circumscribed_thresh  = m_costPossiblyCircumscribedThreshold;
+	sbpl_planner.planner_info.nominalvel                          = m_nominalVelocity;
+	sbpl_planner.planner_info.timetoturn45degsinplace             = m_timeToTurn45DegreeInplace;
+	sbpl_planner.planner_info.robotWidth                          = m_robotWidth;
+	sbpl_planner.planner_info.robotLength                         = m_robotLength;
+	sbpl_planner.planner_info.allocatedTimeSecs                   = m_allocatedTimeSecs;
+	sbpl_planner.planner_info.initialEpsilon                      = m_initialEpsilon;
     //std::cout << "setEnvironmentVariables()" << m_nominalVelocity << m_timeToTurn45DegreeInplace << m_obstacleThreshold << std::endl;  
-
 }
 
-
+/**
+* @brief  Initializes the environment variables from Parameter server
+*/
 void Environment::initializeEnviromentVariables()
 {
 	nh_.getParam("/global_planner/obstacleThreshold", m_obstacleThreshold); 
@@ -135,14 +136,16 @@ void Environment::initializeEnviromentVariables()
 	nh_.getParam("/global_planner/costPossiblyCircumscribedThreshold", m_costPossiblyCircumscribedThreshold); 
 	nh_.getParam("/global_planner/nominalVelocity", m_nominalVelocity); 
 	nh_.getParam("/global_planner/timeToTurn45DegreeInplace", m_timeToTurn45DegreeInplace); 
-
 	nh_.getParam("/global_planner/robotWidth", m_robotWidth); 	
 	nh_.getParam("/global_planner/robotLength", m_robotLength); 
-
 	//ROS_ERROR("initialized Environment variables : %d   %f   %f",m_obstacleThreshold,m_nominalVelocity,m_timeToTurn45DegreeInplace);
-   
 }
 
+
+/**
+* @brief  Getter for the global path computed
+* @return Returns the global path
+*/
 nav_msgs::Path Environment::getGlobalPath()
 {
     return m_fullPath;

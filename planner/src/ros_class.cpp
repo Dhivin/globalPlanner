@@ -1,8 +1,8 @@
 #include <ros/console.h>
 #include "ros_class.h"
 /**
-    * @brief  Constructor for the Computations
-    */
+* @brief  Constructor for the RosClass
+*/
 RosClass::RosClass()
 {
     /**
@@ -18,34 +18,40 @@ RosClass::RosClass()
     globalPlanPublisher = nh.advertise<nav_msgs::Path>("/global_planner", 10);
 
     ROS_WARN("ROS class constructor called");
-    /*Subscribers*/
-    // clickedPoints               = nh.subscribe("/clicked_point", 1, &RosClass::clickedPointCallback, this);
-    // odomSubscriber              = nh.subscribe("/amcl_pose", 1, &RosClass::odomCallback, this);
-    // globalCostmapSubscriber     = nh.subscribe("/move_base/global_costmap/costmap", 1, &RosClass::costmapCallback, this);
-    /*Publishers*/
+
 }
 
+/**
+* @brief  Destructor for the RosClass
+*/
 RosClass::~RosClass()
 {
 }
 
+/**
+* @brief  Callback for updating the global costmap data
+*/
 void RosClass::costmapCallback(const nav_msgs::OccupancyGridConstPtr data)
 {
     //ROS_WARN("Costmap Callback");
     m_mapData.clear();
-    m_gridWidth = data->info.width;
+    m_gridWidth  = data->info.width;
     m_gridHeight = data->info.height;
     m_resolution = data->info.resolution;
-    m_offsetX = data->info.origin.position.x;
-    m_offsetY = data->info.origin.position.y;
+    m_offsetX    = data->info.origin.position.x;
+    m_offsetY    = data->info.origin.position.y;
     for (auto i : data->data)
     {
         this->m_mapData.push_back(i);
     }
 }
 
+/**
+* @brief  Callback for updating the robot position data
+*/
 void RosClass::robot_cb(const geometry_msgs::Pose& msg)
 {
+    start.clear();
     m_robotPose = msg;
     m_robotX    = msg.position.x - m_offsetX;
     m_robotY    = msg.position.y - m_offsetY;
@@ -56,12 +62,25 @@ void RosClass::robot_cb(const geometry_msgs::Pose& msg)
     m.getRPY(roll, pitch, yaw);
 
     m_robotTheta = yaw;
+    if(yaw < 0.0)
+    {
+        m_robotTheta = yaw + 6.28;
+    }
+
+    start.push_back(m_robotX);
+    start.push_back(m_robotY);
+    start.push_back(m_robotTheta);
+    //std::cout << "current position " << m_robotX << " " << m_robotY << " " << m_robotTheta << '\n';
+
 }
 
+/**
+* @brief  Callback for updating the final goal pose
+*/
 void RosClass::goalCallback(const move_base_msgs::MoveBaseActionGoal &goal_msg)
 {
 
-    start.clear();
+
     end.clear();
     m_goalPose.position = goal_msg.goal.target_pose.pose.position;
     m_goalPose.orientation = goal_msg.goal.target_pose.pose.orientation;
@@ -73,71 +92,109 @@ void RosClass::goalCallback(const move_base_msgs::MoveBaseActionGoal &goal_msg)
     tf::Matrix3x3 m(q);
     double roll, pitch, yaw;
     m.getRPY(roll, pitch, yaw);
-
     m_goalTheta = yaw;
 
-    //std::cout << "target position " << m_goalX << " " << m_goalY << " " << m_goalTheta << '\n';
-    //std::cout << "current position " << m_robotX << " " << m_robotY << " " << m_robotTheta << '\n';
-
-    start.push_back(m_robotX);
-    start.push_back(m_robotY);
-    start.push_back(m_robotTheta);
+    if(yaw < 0.0)
+    {
+        m_goalTheta = yaw + 6.28;
+    }
 
     end.push_back(m_goalX);
     end.push_back(m_goalY);
     end.push_back(m_goalTheta);
-    //plan(start, end);
+    //std::cout << "target position " << m_goalX << " " << m_goalY << " " << m_goalTheta << '\n';
+
 }
 
 /**
 * @brief Getter functions
 */
 
+/**
+* @brief  Function for getting the gridwidth
+* @return the grid width from the costmap  
+*/
 int RosClass::getGridWidth()
 {
     return m_gridWidth;
 }
 
+
+
+/**
+* @brief  Function for getting the grid height
+* @return the grid height from the costmap  
+*/
 int RosClass::getGridHeight()
 {
     return m_gridHeight;
 }
 
+/**
+* @brief  Function for getting the grid resolution
+* @return the resolution from the costmap  
+*/
 double RosClass::getResolution()
 {
     return m_resolution;
 }
 
+/**
+* @brief  Function for getting the offsetX
+* @return the offset in X axis for the costmap   
+*/
 int RosClass::getOffsetX()
 {
     return m_offsetX;
 }
 
+/**
+* @brief  Function for getting the offset Y
+* @return the offset in Y axis for the costmap  
+*/
 int RosClass::getOffsetY()
 {
     return m_offsetY;
 }
 
+/**
+* @brief  Function for getting the map data
+* @return pccupancy matrix from the costmap 
+*/
 std::vector<int> RosClass::getMapdata()
 {
     return m_mapData;
 }
 
+/**
+* @brief  Function for getting the start point
+* @return the coordinates of the start position 
+*/
 std::vector<double> RosClass::getStart()
 {
     return start;
 }
 
+/**
+* @brief  Function for getting the goal point
+* @return the coordinates of target goal position 
+*/
 std::vector<double> RosClass::getGoal()
 {
     return end;
 }
 
+/**
+* @brief  Function for getting getting the current robot position
+*/
 geometry_msgs::Pose RosClass::getRobotPose()
 {
     return m_robotPose;
 }
 
+/**
+* @brief  Function for getting getting the goal position
+*/
 geometry_msgs::Pose RosClass::getGoalPose()
 {
     return m_goalPose;
@@ -149,6 +206,9 @@ geometry_msgs::Pose RosClass::getGoalPose()
 * @brief Setter functions
 */
 
+/**
+* @brief  Publishes the path calculated by the planner
+*/
 void RosClass::publishPath(nav_msgs::Path m_Path)
 {
     globalPlanPublisher.publish(m_Path);

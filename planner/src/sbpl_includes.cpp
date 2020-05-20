@@ -107,11 +107,11 @@ EnvironmentType SBPLIncludes::StrToEnvironmentType(const char *str)
     }
 }
 
-std::vector<std::vector<double>> SBPLIncludes::planxythetamlevlat(PlannerType plannerType,std::vector<double> start, std::vector<double> end,const char *smotPrimFile, std::vector<int> &map_data,MapInfo map_info)
+std::vector<std::vector<double>> SBPLIncludes::planxythetamlevlat(PlannerType& plannerType,std::vector<double>& start, std::vector<double>& end,const char *smotPrimFile, const std::vector<int>& map_data,PlannerInfo& planner_info)
 {
     int bRet = 0;
-    double allocated_time_secs = map_info.allocatedTimeSecs;//10.0; //in seconds
-    double initialEpsilon = map_info.initialEpsilon;//3.0;
+    double allocated_time_secs = planner_info.allocatedTimeSecs;//10.0; //in seconds
+    double initialEpsilon = planner_info.initialEpsilon;//3.0;
     MDPConfig MDPCfg;
     bool bsearchuntilfirstsolution = false;
     bool bforwardsearch = true;
@@ -121,8 +121,8 @@ std::vector<std::vector<double>> SBPLIncludes::planxythetamlevlat(PlannerType pl
     //this is for the default level - base level
     vector<sbpl_2Dpt_t> perimeterptsV;
     sbpl_2Dpt_t pt_m;
-    double halfwidth  = map_info.robotWidth/2;     //0.02;  //0.3;
-    double halflength = map_info.robotLength/2;    //0.02; //0.45;
+    double halfwidth  = planner_info.robotWidth/2;     //0.02;  //0.3;
+    double halflength = planner_info.robotLength/2;    //0.02; //0.45;
     pt_m.x = -halflength;
     pt_m.y = -halfwidth;
     perimeterptsV.push_back(pt_m);
@@ -142,13 +142,14 @@ std::vector<std::vector<double>> SBPLIncludes::planxythetamlevlat(PlannerType pl
 
 
 
-    // std::cout << "ENV SETUP DONE sbplincludes.cpp" << map_info.nominalvel << "  "<< map_info.timetoturn45degsinplace << "  " << map_info.obsthresh << std::endl;  
-    
-    if (!environment_navxythetalat.InitializeEnv(map_info.width, map_info.height, mapdata,start[0], start[1], start[2], end[0], end[1], end[2], perimeterptsV, map_info.cell_size, map_info.nominalvel,map_info.timetoturn45degsinplace,map_info.obsthresh, smotPrimFile))
+    //std::cout << "ENV SETUP DONE sbplincludes.cpp" << map_info.nominalvel << "  "<< map_info.timetoturn45degsinplace << "  " << map_info.obsthresh << std::endl;  
+    //std::cout << "map data" << map_data.size()<< std::endl;
+    if (!environment_navxythetalat.InitializeEnv(planner_info.width, planner_info.height, mapdata,start[0], start[1], start[2], end[0], end[1], end[2], perimeterptsV, planner_info.cell_size, planner_info.nominalvel,planner_info.timetoturn45degsinplace,planner_info.obsthresh, smotPrimFile))
     {
         throw SBPL_Exception("ERROR: InitializeEnv failed");
     }
     
+    //std::cout << "Check 3" << std::endl;
     //setting grid with global cost values
     environment_navxythetalat.InitializeMapdata(map_data);
 
@@ -182,13 +183,13 @@ std::vector<std::vector<double>> SBPLIncludes::planxythetamlevlat(PlannerType pl
     unsigned char cost_inscribed_thresh_addlevels[2];              //size should be at least numofaddlevels
     unsigned char cost_possibly_circumscribed_thresh_addlevels[2]; //size should be at least numofaddlevels
     //no costs are indicative of whether a cell is within inner circle
-    cost_inscribed_thresh_addlevels[0] = map_info.cost_inscribed_thresh;//255;       cost_inscribed_thresh
+    cost_inscribed_thresh_addlevels[0] = planner_info.cost_inscribed_thresh;//255;       cost_inscribed_thresh
     //no costs are indicative of whether a cell is within outer circle
-    cost_possibly_circumscribed_thresh_addlevels[0] = map_info.cost_possibly_circumscribed_thresh;//0;  
+    cost_possibly_circumscribed_thresh_addlevels[0] = planner_info.cost_possibly_circumscribed_thresh;//0;  
     //no costs are indicative of whether a cell is within inner circle
-    cost_inscribed_thresh_addlevels[1] = map_info.cost_inscribed_thresh;//255;
+    cost_inscribed_thresh_addlevels[1] = planner_info.cost_inscribed_thresh;//255;
     //no costs are indicative of whether a cell is within outer circle
-    cost_possibly_circumscribed_thresh_addlevels[1] = map_info.cost_possibly_circumscribed_thresh;//0;
+    cost_possibly_circumscribed_thresh_addlevels[1] = planner_info.cost_possibly_circumscribed_thresh;//0;
     if (!environment_navxythetalat.InitializeAdditionalLevels(numofaddlevels, perimeterptsVV,
                                                               cost_inscribed_thresh_addlevels,
                                                               cost_possibly_circumscribed_thresh_addlevels))

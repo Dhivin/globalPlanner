@@ -718,6 +718,7 @@ bool EnvironmentNAVXYTHETALATTICE::ReadinMotionPrimitive(
     }
     if (strcmp(sTemp, sExpected) != 0)
     {
+        std::cout <<"p1.1"<< std::endl;
         SBPL_ERROR("ERROR: expected %s but got %s\n", sExpected, sTemp);
         fflush(stdout);
         return false;
@@ -735,11 +736,13 @@ bool EnvironmentNAVXYTHETALATTICE::ReadinMotionPrimitive(
     }
     if (strcmp(sTemp, sExpected) != 0)
     {
+        std::cout <<"p1.2"<< std::endl;
         SBPL_ERROR("ERROR: expected %s but got %s\n", sExpected, sTemp);
         return false;
     }
     if (fscanf(fIn, "%d", &dTemp) == 0)
     {
+        std::cout <<"p1.3"<< std::endl;
         SBPL_ERROR("ERROR reading startangle\n");
         return false;
     }
@@ -753,12 +756,14 @@ bool EnvironmentNAVXYTHETALATTICE::ReadinMotionPrimitive(
     }
     if (strcmp(sTemp, sExpected) != 0)
     {
+        std::cout <<"p1.4"<< std::endl;
         SBPL_ERROR("ERROR: expected %s but got %s\n", sExpected, sTemp);
         return false;
     }
 
     if (ReadinCell(&pMotPrim->endcell, fIn) == false)
     {
+        std::cout <<"p1.5"<< std::endl;
         SBPL_ERROR("ERROR: failed to read in endsearchpose\n");
         return false;
     }
@@ -771,6 +776,7 @@ bool EnvironmentNAVXYTHETALATTICE::ReadinMotionPrimitive(
     }
     if (strcmp(sTemp, sExpected) != 0)
     {
+        std::cout <<"p1.6"<< std::endl;
         SBPL_ERROR("ERROR: expected %s but got %s\n", sExpected, sTemp);
         return false;
     }
@@ -790,6 +796,7 @@ bool EnvironmentNAVXYTHETALATTICE::ReadinMotionPrimitive(
         }
         if (strcmp(sTemp, sExpected) != 0)
         {
+            std::cout <<"p1.7"<< std::endl;
             SBPL_ERROR("ERROR: expected %s but got %s\n", sExpected, sTemp);
             return false;
         }
@@ -808,6 +815,7 @@ bool EnvironmentNAVXYTHETALATTICE::ReadinMotionPrimitive(
     }
     if (strcmp(sTemp, sExpected) != 0)
     {
+        std::cout <<"p1.8"<< std::endl;
         SBPL_ERROR("ERROR: expected %s but got %s\n", sExpected, sTemp);
         return false;
     }
@@ -823,6 +831,7 @@ bool EnvironmentNAVXYTHETALATTICE::ReadinMotionPrimitive(
         sbpl_xy_theta_pt_t intermpose;
         if (ReadinPose(&intermpose, fIn) == false)
         {
+            std::cout <<"p1.9"<< std::endl;
             SBPL_ERROR("ERROR: failed to read in intermediate poses\n");
             return false;
         }
@@ -849,6 +858,10 @@ bool EnvironmentNAVXYTHETALATTICE::ReadinMotionPrimitive(
     if (endx_c != pMotPrim->endcell.x || endy_c != pMotPrim->endcell.y ||
         endtheta_c != pMotPrim->endcell.theta)
     {
+        std::cout <<"p1.1   "  << sourcepose.x  << "  "<< sourcepose.y<< std::endl;
+        std::cout <<endx_c << "  "<< pMotPrim->endcell.x<< std::endl;
+        std::cout <<endy_c << "  "<<  pMotPrim->endcell.y<< std::endl;
+        std::cout <<endtheta_c << "  "<<pMotPrim->endcell.theta<< std::endl;
         SBPL_ERROR("ERROR: incorrect primitive %d with startangle=%d "
                    "last interm point %f %f %f does not match end pose %d %d %d\n",
                    pMotPrim->motprimID, pMotPrim->starttheta_c,
@@ -1002,12 +1015,12 @@ bool EnvironmentNAVXYTHETALATTICE::ReadMotionPrimitives(FILE *fMotPrims)
         return false;
     }
     SBPL_PRINTF("totalnumberofprimitives: %d\n", totalNumofActions);
-
+    std::cout <<"p1.."<< std::endl;
     // Read in motion primitive for each action
     for (int i = 0; i < totalNumofActions; i++)
     {
         SBPL_xytheta_mprimitive motprim;
-
+        //std::cout <<"p2.."<< std::endl;
         if (!EnvironmentNAVXYTHETALATTICE::ReadinMotionPrimitive(&motprim,
                                                                  fMotPrims))
         {

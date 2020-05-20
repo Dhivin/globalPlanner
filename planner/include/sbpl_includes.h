@@ -69,7 +69,7 @@ public:
     SBPLIncludes();
     ~SBPLIncludes();
 
-    struct MapInfo
+    struct PlannerInfo
     {
         int width;
         int height;
@@ -85,13 +85,13 @@ public:
         double initialEpsilon;
     };
 
-    MapInfo map_info;
+    PlannerInfo planner_info;
 
     std::string PlannerTypeToStr(PlannerType plannerType);
     PlannerType StrToPlannerType(const char *str);
     std::string EnvironmentTypeToStr(EnvironmentType environmentType);
     EnvironmentType StrToEnvironmentType(const char *str);
-    std::vector<std::vector<double>> planxythetamlevlat(PlannerType plannerType,std::vector<double> start, std::vector<double> end,const char *smotPrimFile, std::vector<int> &map_data,MapInfo map_info);
+    std::vector<std::vector<double>> planxythetamlevlat(PlannerType& plannerType,std::vector<double>& start, std::vector<double>& end,const char *smotPrimFile, const std::vector<int>& map_data,PlannerInfo& planner_info);
 
 
 };

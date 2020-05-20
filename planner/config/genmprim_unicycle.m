@@ -78,7 +78,7 @@ if UNICYCLE_MPRIM_16DEGS == 1
     basemprimendpts45_c(2,:) = [3 3 0 forwardcostmult];
     %basemprimendpts45_c(3,:) = [-1 -1 0 backwardcostmult];    
     %1/16 theta change
-    basemprimendpts45_c(3,:) = [2 3 1 forwardandturncostmult];
+    basemprimendpts45_c(3,:) = [2 4 1 forwardandturncostmult];
     basemprimendpts45_c(4,:) = [4 3 -1 forwardandturncostmult];    
     %turn in place
     basemprimendpts45_c(5,:) = [0 0 1 turninplacecostmult];

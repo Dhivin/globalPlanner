@@ -28,9 +28,9 @@ class RosClass
 {
 public:
 
-     /**
-     * @brief  Constructor for the Ros class
-     */
+    /**
+    * @brief  Constructor for the Ros class
+    */
 
     RosClass();
     /**
@@ -50,14 +50,19 @@ public:
     std::vector<int> getMapdata();
     std::vector<double> getStart();
     std::vector<double> getGoal();
-
     geometry_msgs::Pose getRobotPose();    
     geometry_msgs::Pose getGoalPose(); 
 
+    /**
+    * @brief Publishes the path computed by the planner
+    */    
     void publishPath(nav_msgs::Path m_Path);
     
 private:
-	
+
+    /**
+    * @brief NodeHandle ROS
+    */	
     ros::NodeHandle nh;
 
 
@@ -68,36 +73,37 @@ private:
 	ros::Subscriber robotPoseSubscriber;
 	ros::Subscriber goalSubscriber;
 
-
-	
 	/**
     * @brief ROS Publishers
     */
 	ros::Publisher globalPlanPublisher;
 
-
-
 	/**
     * @brief Subscriber Callbacks
     */
-
+   
+    /**
+    * @brief  Callback for updating the global costmap data
+    */
 	void costmapCallback(const nav_msgs::OccupancyGridConstPtr data);
+  
+    /**
+    * @brief  Callback for updating the robot position data
+    */
 	void robot_cb(const geometry_msgs::Pose& robot_msg);
+
+    /**
+    * @brief  Callback for updating the final goal pose
+    */
 	void goalCallback(const move_base_msgs::MoveBaseActionGoal &goal_msg);
 
-
-
-
-
+    /*Member variables*/
     int m_gridWidth, m_gridHeight,m_offsetX, m_offsetY;
-    
     double m_resolution;
     double m_robotX, m_robotY, m_robotTheta;
     double m_goalX, m_goalY, m_goalTheta;
-
     std::vector<int> m_mapData;
     std::vector<double> start, end;
-
     geometry_msgs::Pose m_goalPose,m_robotPose;
     
 };
