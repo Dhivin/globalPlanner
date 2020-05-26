@@ -44,6 +44,24 @@ void RosClass::costmapCallback(const nav_msgs::OccupancyGridConstPtr data)
     {
         this->m_mapData.push_back(i);
     }
+
+//  	Mat sourceImage,destinationImage;
+//  	sourceImage.create(m_gridWidth,m_gridHeight, CV_8UC1);
+//     for (int y = 0; y < m_gridHeight; y++)
+//     {
+//         for (int x = 0; x < m_gridWidth; x++)
+//         {
+//             sourceImage.at<uchar>(x, y) = data->data[x + y* m_gridHeight];//15*i + j;
+//             //EnvNAVXYTHETALATCfg.Grid2D[x][y] = map_data[x + y * width];
+//         }
+//     }
+
+//    // std::cout << "sourceImage = " << std::endl << " "  << " "  << sourceImage.size << std::endl  << std::endl ;
+    
+//     resize(sourceImage, destinationImage, Size(m_gridWidth/2, m_gridHeight/2),INTER_LINEAR);
+
+   // std::cout << "M = " << std::endl  << " "  << " "  << destinationImage.size << std::endl  << std::endl ;
+
 }
 
 /**

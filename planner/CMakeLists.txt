@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   dynamic_reconfigure
   actionlib_msgs
+  OpenCV
 )
 
 generate_dynamic_reconfigure_options(cfg/planner.cfg)
@@ -31,19 +32,18 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/include
+  ${OpenCV_INCLUDE_DIRS}
  
 )
 
 
 
-#add_executable(test2 src/planner_new.cpp)
 add_executable(global_planner src/global_planner.cpp
 			      src/sbpl_includes.cpp
             src/ros_class.cpp
             src/environment.cpp)
 
 
-#target_link_libraries(test2 ${catkin_LIBRARIES} sbpl)
-target_link_libraries(global_planner ${catkin_LIBRARIES} sbpl)
+target_link_libraries(global_planner ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} sbpl)
 
 add_dependencies(global_planner ${PROJECT_NAME}_gencfg)

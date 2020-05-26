@@ -1,4 +1,4 @@
-global_planner: 
+globalPlanner: 
   obstacleThreshold: 90
   costInscribedThreshold: 90
   costPossiblyCircumscribedThreshold: 1
@@ -6,4 +6,5 @@ global_planner:
   timeToTurn45DegreeInplace: 0.5
   robotLength: 0.2
   robotWidth: 0.2
+motionPrimitiveDirectory: "/config/robot10.mprim"
 

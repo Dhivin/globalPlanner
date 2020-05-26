@@ -41,7 +41,7 @@ UNICYCLE_MPRIM_16DEGS = 1;
 
 
 if UNICYCLE_MPRIM_16DEGS == 1
-    resolution = 0.05;
+    resolution = 0.10;
     numberofangles = 16; %preferably a power of 2, definitely multiple of 8
     numberofprimsperangle = 6;
 
@@ -105,7 +105,7 @@ else
 end;
     
     
-fout = fopen('robot1.mprim', 'w');
+fout = fopen('robot10.mprim', 'w');
 
 
 %write the header

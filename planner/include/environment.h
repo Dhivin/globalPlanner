@@ -6,12 +6,14 @@
 #include <vector>
 #include <planner/plannerConfig.h> 
 #include <dynamic_reconfigure/server.h>
-
-#include "sbpl_includes.h"
-
 #include <nav_msgs/Path.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include "sbpl_includes.h"
+
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/opencv.hpp>
+using namespace cv;
 
 
 class Environment
@@ -89,15 +91,36 @@ private:
     */
 	void setEnvironmentVariables(CostMapInfo& costMapInfo);
 
+    /**
+    * @brief  Updates the costmap by the factor of m_factor
+    */
+    void resizeMatrix(const std::vector<int> &sourceMatrix,std::vector<int> &destMatrix,const int &m_factor,const int &width,const int &height);
+	
+
     /*Member variables*/
     int m_obstacleThreshold,m_costInscribedThreshold,m_costPossiblyCircumscribedThreshold;
+    int m_factor;
+
     double m_nominalVelocity,m_timeToTurn45DegreeInplace;
     double m_robotWidth,m_robotLength;
     double m_allocatedTimeSecs,m_initialEpsilon;
+
     bool m_setup = false;
+    bool m_initialize = false;
+    bool forwardSearch = true;
+    
+    std::string m_globalFrame   =  "/map";
+    std::string m_pathDirectory;
+    std::string searchDir;
+    std::string plannerType;
+    std::string mot_prim_file_name ;
+
     nav_msgs::Path m_fullPath;
     planner::plannerConfig lastConfig;
     planner::plannerConfig defaultConfig;
+
+    PlannerType planner;
+
     
     /*Instances of the classe  SBPLIncludes*/
 	SBPLIncludes sbpl_planner;

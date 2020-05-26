@@ -1015,7 +1015,7 @@ bool EnvironmentNAVXYTHETALATTICE::ReadMotionPrimitives(FILE *fMotPrims)
         return false;
     }
     SBPL_PRINTF("totalnumberofprimitives: %d\n", totalNumofActions);
-    std::cout <<"p1.."<< std::endl;
+    //std::cout <<"p1.."<< std::endl;
     // Read in motion primitive for each action
     for (int i = 0; i < totalNumofActions; i++)
     {
@@ -2522,7 +2522,7 @@ bool EnvironmentNAVXYTHETALATTICE::InitializeMapdata(
     {
         for (int x = 0; x < width; x++)
         {
-            EnvNAVXYTHETALATCfg.Grid2D[x][y] = map_data[x + y * width];
+            EnvNAVXYTHETALATCfg.Grid2D[x][y] = map_data[x + (y * height)];
         }
     }
 }
