@@ -147,7 +147,7 @@ bool Environment::plan(std::vector<double> &from, std::vector<double> &to, CostM
 * @brief  Sets the Environment variables for passing to the planner.Updated from parameter server and costmap data
 * @param mapInfo contains the environment variables from the costmap
 */
-void Environment::setEnvironmentVariables(CostMapInfo &map_info)
+void Environment::setEnvironmentVariables(const CostMapInfo &map_info)
 {
 
 	if(m_factor !=  1.0)

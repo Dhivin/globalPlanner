@@ -89,7 +89,7 @@ private:
     * @brief  Sets the Environment variables for passing to the planner.Updated from parameter server and costmap data
     * @param mapInfo contains the environment variables from the costmap
     */
-	void setEnvironmentVariables(CostMapInfo& costMapInfo);
+	void setEnvironmentVariables(const CostMapInfo& costMapInfo);
 
     /**
     * @brief  Updates the costmap by the factor of m_factor
@@ -108,7 +108,7 @@ private:
     bool m_setup = false;
     bool m_initialize = false;
     bool forwardSearch = true;
-    
+
     std::string m_globalFrame   =  "/map";
     std::string m_pathDirectory;
     std::string searchDir;

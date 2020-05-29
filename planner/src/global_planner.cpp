@@ -28,11 +28,15 @@ GlobalPlanner::~GlobalPlanner()
 */
 void GlobalPlanner::setMapEnvironment()
 {
-	m_environment.costMapInfo.width 	= m_getVariables->getGridWidth();
-	m_environment.costMapInfo.height 	= m_getVariables->getGridHeight();
-	m_environment.costMapInfo.offsetX 	= m_getVariables->getOffsetX();
-	m_environment.costMapInfo.offsetY 	= m_getVariables->getOffsetY();
-	m_environment.costMapInfo.resolution= m_getVariables->getResolution();
+	// if(!m_setup)
+	// {
+		m_environment.costMapInfo.width 	= m_getVariables->getGridWidth();
+		m_environment.costMapInfo.height 	= m_getVariables->getGridHeight();
+		m_environment.costMapInfo.offsetX 	= m_getVariables->getOffsetX();
+		m_environment.costMapInfo.offsetY 	= m_getVariables->getOffsetY();
+		m_environment.costMapInfo.resolution= m_getVariables->getResolution();
+	// 	m_setup = true;
+	// }
 	startPoint 							= m_getVariables->getStart();
 	goalPoint 							= m_getVariables->getGoal();
 	mapData 							= m_getVariables->getMapdata();
